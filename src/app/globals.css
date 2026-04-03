@@ -1,11 +1,72 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&family=Poppins:wght@600;700;800&display=swap');
 
 :root {
+  /* Masters palette */
   --masters-green: #006747;
+  --masters-green-light: #00875e;
+  --masters-green-glow: rgba(0, 103, 71, 0.4);
   --masters-yellow: #f2c75c;
+  --masters-yellow-glow: rgba(242, 199, 92, 0.3);
   --masters-dark: #00432e;
+
+  /* Dark theme (Sleeper-inspired) */
+  --bg-primary: #0b0e1a;
+  --bg-secondary: #111528;
+  --bg-card: #161a2e;
+  --bg-card-hover: #1c2038;
+  --bg-card-elevated: #1e2240;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --text-primary: #f0f0f5;
+  --text-secondary: #8b8fa3;
+  --text-muted: #5c6078;
+
+  /* Scoring colors */
+  --score-positive: #ef4444;
+  --score-negative: #22c55e;
+  --score-even: #8b8fa3;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Georgia', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+/* Glow effects */
+.glow-green {
+  box-shadow: 0 0 20px var(--masters-green-glow), 0 0 60px rgba(0, 103, 71, 0.15);
+}
+.glow-yellow {
+  box-shadow: 0 0 20px var(--masters-yellow-glow);
+}
+
+/* Card base */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+}
+.card-elevated {
+  background: var(--bg-card-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
 }

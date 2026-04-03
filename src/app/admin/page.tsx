@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Year, Golfer, Participant } from "@/lib/types";
 
+const inputClass = "w-full bg-[var(--bg-secondary)] border border-[var(--border-medium)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--masters-green)] transition-colors";
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -87,12 +89,14 @@ export default function AdminPage() {
   if (!authed) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-          <h2 className="text-xl font-bold text-[var(--masters-green)] mb-4">Admin Login</h2>
+        <div className="card p-8 w-full max-w-sm">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Admin</h2>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded px-3 py-2 mb-4" placeholder="Admin password"
+            className={inputClass + " mb-4"} placeholder="Admin password"
             onKeyDown={(e) => e.key === "Enter" && login()} />
-          <button onClick={login} className="w-full bg-[var(--masters-green)] text-white py-2 rounded">Login</button>
+          <button onClick={login} className="w-full bg-[var(--masters-green)] text-white py-3 rounded-xl font-semibold hover:bg-[var(--masters-green-light)] transition-colors">
+            Login
+          </button>
         </div>
       </div>
     );
@@ -101,43 +105,56 @@ export default function AdminPage() {
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
-        <h2 className="text-2xl font-bold text-[var(--masters-green)]">Admin Panel</h2>
-        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="border rounded px-3 py-2">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'Poppins, sans-serif' }}>Admin</h2>
+        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}
+          className="bg-[var(--bg-card)] border border-[var(--border-medium)] rounded-xl px-3 py-2 text-[var(--text-primary)] focus:outline-none">
           {years.map((y) => <option key={y.year} value={y.year}>{y.year}</option>)}
         </select>
       </div>
-      <div className="flex gap-2 mb-6">
+
+      <div className="flex gap-1 mb-6 bg-[var(--bg-card)] rounded-xl p-1">
         {(["setup", "scores", "payments"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded font-medium ${tab === t ? "bg-[var(--masters-green)] text-white" : "bg-gray-200 text-gray-700"}`}>
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              tab === t ? "bg-[var(--masters-green)] text-white" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
-      {message && <p className="bg-blue-50 text-blue-800 p-3 rounded mb-4">{message}</p>}
+
+      {message && (
+        <p className="bg-[var(--masters-green)]/10 text-[var(--masters-green-light)] p-3 rounded-xl mb-4 text-sm">{message}</p>
+      )}
 
       {tab === "setup" && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-bold mb-3">Create / Update Year</h3>
+        <div className="space-y-4">
+          <div className="card p-6">
+            <h3 className="font-bold text-[var(--text-primary)] mb-4">Create / Update Year</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <input type="number" value={newYear} onChange={(e) => setNewYear(Number(e.target.value))} className="border rounded px-3 py-2" placeholder="Year" />
-              <input type="text" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} className="border rounded px-3 py-2" placeholder="Access code" />
+              <input type="number" value={newYear} onChange={(e) => setNewYear(Number(e.target.value))} className={inputClass} placeholder="Year" />
+              <input type="text" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} className={inputClass} placeholder="Access code" />
             </div>
-            <button onClick={createYear} className="bg-[var(--masters-green)] text-white px-4 py-2 rounded">Create Year</button>
+            <button onClick={createYear} className="bg-[var(--masters-green)] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[var(--masters-green-light)] transition-colors">
+              Create Year
+            </button>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-bold mb-3">Upload Golfers for {selectedYear}</h3>
+          <div className="card p-6">
+            <h3 className="font-bold text-[var(--text-primary)] mb-4">Upload Golfers for {selectedYear}</h3>
             <textarea value={golferText} onChange={(e) => setGolferText(e.target.value)}
-              className="w-full border rounded px-3 py-2 h-48 font-mono text-sm"
+              className={inputClass + " h-48 font-mono text-sm"}
               placeholder={"Tier 1\nScottie Scheffler\nRory McIlroy\n...\nTier 2\nWill Zalatoris\n..."} />
-            <button onClick={uploadGolfers} className="bg-[var(--masters-green)] text-white px-4 py-2 rounded mt-2">Upload Golfers</button>
+            <button onClick={uploadGolfers} className="bg-[var(--masters-green)] text-white px-6 py-2.5 rounded-xl font-medium mt-3 hover:bg-[var(--masters-green-light)] transition-colors">
+              Upload Golfers
+            </button>
           </div>
           {yearData && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="font-bold mb-3">Pick Submissions</h3>
+            <div className="card p-6">
+              <h3 className="font-bold text-[var(--text-primary)] mb-4">Pick Submissions</h3>
               <button onClick={togglePicksOpen}
-                className={`px-4 py-2 rounded font-medium ${yearData.picks_open ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}>
+                className={`px-6 py-2.5 rounded-xl font-medium transition-colors ${
+                  yearData.picks_open ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                }`}>
                 {yearData.picks_open ? "Close Picks" : "Open Picks"}
               </button>
             </div>
@@ -146,57 +163,65 @@ export default function AdminPage() {
       )}
 
       {tab === "scores" && (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-[var(--masters-green)] text-white">
-              <tr>
-                <th className="px-3 py-2 text-left">Golfer</th>
-                <th className="px-3 py-2">Tier</th>
-                <th className="px-3 py-2">R1</th>
-                <th className="px-3 py-2">R2</th>
-                <th className="px-3 py-2">R3</th>
-                <th className="px-3 py-2">R4</th>
-                <th className="px-3 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {golfers.map((g) => (
-                <tr key={g.id} className="border-b">
-                  <td className="px-3 py-1">{g.name}</td>
-                  <td className="px-3 py-1 text-center">{g.tier}</td>
-                  {(["day1_score", "day2_score", "day3_score", "day4_score"] as const).map((field) => (
-                    <td key={field} className="px-1 py-1">
-                      <input type="number" defaultValue={g[field] ?? ""} onBlur={(e) => updateScore(g.id, field, e.target.value)}
-                        className="w-16 border rounded px-1 py-1 text-center text-sm" />
-                    </td>
-                  ))}
-                  <td className="px-1 py-1">
-                    <select defaultValue={g.status} onChange={(e) => updateStatus(g.id, e.target.value)} className="border rounded px-1 py-1 text-sm">
-                      <option value="active">Active</option>
-                      <option value="cut">Cut</option>
-                      <option value="wd">WD</option>
-                    </select>
-                  </td>
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--border-subtle)]">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Golfer</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Tier</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">R1</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">R2</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">R3</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">R4</th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {golfers.map((g) => (
+                  <tr key={g.id} className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-card-hover)]">
+                    <td className="px-4 py-2 text-[var(--text-primary)]">{g.name}</td>
+                    <td className="px-2 py-2 text-center text-[var(--text-secondary)]">{g.tier}</td>
+                    {(["day1_score", "day2_score", "day3_score", "day4_score"] as const).map((field) => (
+                      <td key={field} className="px-1 py-1">
+                        <input type="number" defaultValue={g[field] ?? ""} onBlur={(e) => updateScore(g.id, field, e.target.value)}
+                          className="w-16 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-center text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--masters-green)]" />
+                      </td>
+                    ))}
+                    <td className="px-1 py-1">
+                      <select defaultValue={g.status} onChange={(e) => updateStatus(g.id, e.target.value)}
+                        className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none">
+                        <option value="active">Active</option>
+                        <option value="cut">Cut</option>
+                        <option value="wd">WD</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {tab === "payments" && (
-        <div className="bg-white rounded-lg shadow">
+        <div className="card overflow-hidden">
           <table className="w-full">
-            <thead className="bg-[var(--masters-green)] text-white">
-              <tr><th className="px-4 py-2 text-left">Name</th><th className="px-4 py-2">Paid</th></tr>
+            <thead>
+              <tr className="border-b border-[var(--border-subtle)]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Name</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Status</th>
+              </tr>
             </thead>
             <tbody>
               {participants.map((p) => (
-                <tr key={p.id} className="border-b">
-                  <td className="px-4 py-2">{p.name}</td>
-                  <td className="px-4 py-2 text-center">
+                <tr key={p.id} className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-card-hover)]">
+                  <td className="px-4 py-3 text-[var(--text-primary)]">{p.name}</td>
+                  <td className="px-4 py-3 text-center">
                     <button onClick={() => togglePaid(p.id, p.paid)}
-                      className={`px-3 py-1 rounded text-sm font-medium ${p.paid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                        p.paid ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                      }`}>
                       {p.paid ? "Paid $25" : "Not Paid"}
                     </button>
                   </td>
