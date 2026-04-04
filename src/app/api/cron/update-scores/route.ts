@@ -6,13 +6,13 @@ const ESPN_LEADERBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/golf
 interface ESPNCompetitor {
   athlete: { displayName: string };
   status: { type: { name: string } };
-  linescores?: { value: number }[];
+  linescores?: { value: number; displayValue?: string }[];
 }
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -55,8 +55,9 @@ export async function GET(req: NextRequest) {
     const updates: Record<string, number | string | null> = {};
 
     for (let day = 0; day < 4; day++) {
-      if (linescores[day]?.value !== undefined) {
-        updates[`day${day + 1}_score`] = linescores[day].value - par;
+      const round = linescores[day];
+      if (round?.value && round.value > 0 && round.displayValue !== "-") {
+        updates[`day${day + 1}_score`] = round.value - par;
       }
     }
 

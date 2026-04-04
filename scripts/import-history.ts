@@ -27,7 +27,14 @@ interface ExcelParticipant {
   golferNames: string[];
 }
 
-async function importYear(filename: string, year: number, accessCode: string) {
+// Remap tiers for years that used more than 4 tiers
+// 2024 used tiers 1-6 in the spreadsheet; we collapse to 1-4
+function remapTier(tier: number, tierMap?: Record<number, number>): number {
+  if (tierMap && tierMap[tier] !== undefined) return tierMap[tier];
+  return Math.min(tier, 4);
+}
+
+async function importYear(filename: string, year: number, accessCode: string, tierMap?: Record<number, number>) {
   console.log(`\nImporting ${year} from ${filename}...`);
   const filePath = path.join(EXCEL_DIR, filename);
   const workbook = XLSX.readFile(filePath);
@@ -54,7 +61,7 @@ async function importYear(filename: string, year: number, accessCode: string) {
     if (hasD1 && hasD2 && !hasD3) status = "cut";
 
     golfers.push({
-      name: name.trim(), tier: Number(tier),
+      name: name.trim(), tier: remapTier(Number(tier), tierMap),
       day1: hasD1 ? Number(d1) : null, day2: hasD2 ? Number(d2) : null,
       day3: hasD3 ? Number(d3) : null, day4: d4 !== null && d4 !== undefined && !isNaN(Number(d4)) ? Number(d4) : null,
       status,
@@ -83,6 +90,7 @@ async function importYear(filename: string, year: number, accessCode: string) {
     .from("years").upsert({ year, access_code: accessCode, entry_fee: 25, picks_open: false }, { onConflict: "year" }).select().single();
   if (yearErr) { console.error("  Year insert error:", yearErr); return; }
 
+  await supabase.from("participants").delete().eq("year_id", yearRecord.id);
   await supabase.from("golfers").delete().eq("year_id", yearRecord.id);
 
   const golferRows = golfers.map((g) => ({
@@ -114,7 +122,7 @@ async function importYear(filename: string, year: number, accessCode: string) {
 
 async function main() {
   await importYear("2023_Master's Pool.xlsx", 2023, "masters2023");
-  await importYear("2024_Master's_Pool_scoring_sheet.xlsx", 2024, "masters2024");
+  await importYear("2024_Master's_Pool_scoring_sheet.xlsx", 2024, "masters2024", { 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4 });
   await importYear("2025_Master's_Pool_scoring_sheet.xlsx", 2025, "masters2025");
   console.log("\nImport complete!");
 }

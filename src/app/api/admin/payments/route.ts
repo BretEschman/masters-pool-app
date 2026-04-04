@@ -10,3 +10,13 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
+
+export async function DELETE(req: NextRequest) {
+  if (!isAdminAuthenticated(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { participant_id } = await req.json();
+  const supabase = createServiceClient();
+  // Picks are cascade-deleted via FK constraint
+  const { error } = await supabase.from("participants").delete().eq("id", participant_id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}

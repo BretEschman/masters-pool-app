@@ -2,22 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
-  const { name, tiebreaker_guess, golfer_ids, year_id } = await req.json();
-  if (!name || tiebreaker_guess === undefined || !golfer_ids || golfer_ids.length !== 8 || !year_id) {
-    return NextResponse.json({ error: "Name, tiebreaker guess, year_id, and exactly 8 golfer picks required" }, { status: 400 });
+  const { name, tiebreaker_guess, golfer_ids, year_id, access_code } = await req.json();
+  if (!name || tiebreaker_guess === undefined || !golfer_ids || golfer_ids.length !== 8 || !year_id || !access_code) {
+    return NextResponse.json({ error: "Name, tiebreaker guess, year_id, access code, and exactly 8 golfer picks required" }, { status: 400 });
   }
 
   const supabase = createServiceClient();
-  const { data: yearData } = await supabase.from("years").select("picks_open").eq("id", year_id).single();
-  if (!yearData?.picks_open) return NextResponse.json({ error: "Picks are closed for this year" }, { status: 403 });
+
+  // Verify access code
+  const { data: yearData } = await supabase.from("years").select("picks_open, access_code").eq("id", year_id).single();
+  if (!yearData || yearData.access_code !== access_code) {
+    return NextResponse.json({ error: "Invalid access code" }, { status: 401 });
+  }
+  if (!yearData.picks_open) return NextResponse.json({ error: "Picks are closed for this year" }, { status: 403 });
 
   const { data: golfers } = await supabase.from("golfers").select("id, tier").in("id", golfer_ids);
   if (!golfers || golfers.length !== 8) return NextResponse.json({ error: "Invalid golfer selections" }, { status: 400 });
 
-  const tierCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  const tierCounts: Record<number, number> = {};
   golfers.forEach((g) => (tierCounts[g.tier] = (tierCounts[g.tier] || 0) + 1));
-  if (tierCounts[1] !== 3 || tierCounts[2] !== 2 || tierCounts[3] !== 2 || tierCounts[4] !== 1) {
-    return NextResponse.json({ error: "Must pick 3 from Tier 1, 2 from Tier 2, 2 from Tier 3, 1 from Tier 4" }, { status: 400 });
+  const expectedCounts: Record<number, number> = { 1: 2, 2: 2, 3: 1, 4: 1, 5: 1, 6: 1 };
+  const valid = Object.entries(expectedCounts).every(([tier, count]) => (tierCounts[Number(tier)] || 0) === count);
+  if (!valid) {
+    return NextResponse.json({ error: "Must pick 2 from Tier 1, 2 from Tier 2, 1 from each of Tiers 3-6" }, { status: 400 });
   }
 
   const { data: existing } = await supabase.from("participants").select("id").eq("year_id", year_id).eq("name", name).single();

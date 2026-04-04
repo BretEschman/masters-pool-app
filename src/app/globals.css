@@ -1,31 +1,68 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&family=Poppins:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&family=Poppins:wght@600;700;800&display=swap');
 
 :root {
+  /* EschMetrics brand palette */
+  --em-green: #22c55e;
+  --em-green-dark: #16a34a;
+  --em-green-light: #bbf7d0;
+  --em-green-glow: rgba(34, 197, 94, 0.15);
+  --em-green-glow-strong: rgba(34, 197, 94, 0.25);
+
   /* Masters palette */
-  --masters-green: #006747;
-  --masters-green-light: #00875e;
-  --masters-green-glow: rgba(0, 103, 71, 0.4);
   --masters-yellow: #f2c75c;
   --masters-yellow-glow: rgba(242, 199, 92, 0.3);
-  --masters-dark: #00432e;
+  --masters-dark-green: #006747;
 
-  /* Dark theme (Sleeper-inspired) */
-  --bg-primary: #0b0e1a;
-  --bg-secondary: #111528;
-  --bg-card: #161a2e;
-  --bg-card-hover: #1c2038;
-  --bg-card-elevated: #1e2240;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --text-primary: #f0f0f5;
-  --text-secondary: #8b8fa3;
-  --text-muted: #5c6078;
+  /* Dark surfaces (EschMetrics style) */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-card: #111111;
+  --bg-card-hover: #1a1a1a;
+  --bg-card-elevated: #1c1c1c;
+  --bg-surface: #161616;
+
+  /* Text */
+  --text-primary: #f1f5f9;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* Borders */
+  --border-subtle: #1e1e1e;
+  --border-medium: #27272a;
+  --border-hover: #3f3f46;
 
   /* Scoring colors */
   --score-positive: #ef4444;
   --score-negative: #22c55e;
-  --score-even: #8b8fa3;
+  --score-even: #a1a1aa;
+
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(34, 197, 94, 0.15);
+}
+
+/* Light mode overrides */
+html.light {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f3f4f6;
+  --bg-card-elevated: #f9fafb;
+  --bg-surface: #f3f4f6;
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+
+  --border-subtle: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-hover: #9ca3af;
+
+  --score-positive: #dc2626;
+  --score-negative: #16a34a;
+  --score-even: #6b7280;
+
+  --shadow-glow: 0 0 20px rgba(34, 197, 94, 0.1);
 }
 
 * {
@@ -53,7 +90,7 @@ body {
 
 /* Glow effects */
 .glow-green {
-  box-shadow: 0 0 20px var(--masters-green-glow), 0 0 60px rgba(0, 103, 71, 0.15);
+  box-shadow: 0 0 20px var(--em-green-glow-strong), 0 0 60px var(--em-green-glow);
 }
 .glow-yellow {
   box-shadow: 0 0 20px var(--masters-yellow-glow);
@@ -62,11 +99,19 @@ body {
 /* Card base */
 .card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: 12px;
 }
 .card-elevated {
   background: var(--bg-card-elevated);
-  border: 1px solid var(--border-medium);
-  border-radius: 16px;
+  border: 1px solid var(--border-hover);
+  border-radius: 12px;
+}
+
+/* Ping animation for live indicators */
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
