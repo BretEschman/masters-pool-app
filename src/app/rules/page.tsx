@@ -32,12 +32,12 @@ export default function RulesPage() {
           </p>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { tier: "Tier 1", picks: 2, odds: "4/1 – 30/1", label: "Favorites" },
-              { tier: "Tier 2", picks: 2, odds: "30/1 – 40/1", label: "Contenders" },
-              { tier: "Tier 3", picks: 1, odds: "45/1 – 66/1", label: "Dark Horses" },
-              { tier: "Tier 4", picks: 1, odds: "66/1 – 80/1", label: "Sleepers" },
-              { tier: "Tier 5", picks: 1, odds: "90/1 – 120/1", label: "Long Shots" },
-              { tier: "Tier 6", picks: 1, odds: "120/1+", label: "Flyers" },
+              { tier: "Tier 1", picks: 2, odds: "+550 to +2500", label: "Favorites" },
+              { tier: "Tier 2", picks: 2, odds: "+3000 to +5000", label: "Contenders" },
+              { tier: "Tier 3", picks: 1, odds: "+6000 to +9000", label: "Dark Horses" },
+              { tier: "Tier 4", picks: 1, odds: "+10000 to +17500", label: "Sleepers" },
+              { tier: "Tier 5", picks: 1, odds: "+20000 to +30000", label: "Long Shots" },
+              { tier: "Tier 6", picks: 1, odds: "+40000+", label: "Flyers" },
             ].map((t) => (
               <div key={t.tier} className="bg-[var(--bg-surface)] rounded-lg p-3 border border-[var(--border-subtle)]">
                 <div className="flex items-center justify-between mb-1">

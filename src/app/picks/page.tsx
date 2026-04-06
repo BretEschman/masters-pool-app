@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { Golfer } from "@/lib/types";
 
 const TIER_CONFIG = [
-  { tier: 1, label: "Tier 1", count: 2, odds: "4/1 to 30/1", desc: "The Favorites" },
-  { tier: 2, label: "Tier 2", count: 2, odds: "30/1 to 40/1", desc: "Contenders" },
-  { tier: 3, label: "Tier 3", count: 1, odds: "45/1 to 66/1", desc: "Dark Horses" },
-  { tier: 4, label: "Tier 4", count: 1, odds: "66/1 to 80/1", desc: "Sleepers" },
-  { tier: 5, label: "Tier 5", count: 1, odds: "90/1 to 120/1", desc: "Long Shots" },
-  { tier: 6, label: "Tier 6", count: 1, odds: "120/1+", desc: "Flyers" },
+  { tier: 1, label: "Tier 1", count: 2, odds: "+550 to +2500", desc: "The Favorites" },
+  { tier: 2, label: "Tier 2", count: 2, odds: "+3000 to +5000", desc: "Contenders" },
+  { tier: 3, label: "Tier 3", count: 1, odds: "+6000 to +9000", desc: "Dark Horses" },
+  { tier: 4, label: "Tier 4", count: 1, odds: "+10000 to +17500", desc: "Sleepers" },
+  { tier: 5, label: "Tier 5", count: 1, odds: "+20000 to +30000", desc: "Long Shots" },
+  { tier: 6, label: "Tier 6", count: 1, odds: "+40000+", desc: "Flyers" },
 ];
 
 export default function PicksPage() {
