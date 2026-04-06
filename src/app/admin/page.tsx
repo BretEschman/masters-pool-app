@@ -12,7 +12,7 @@ export default function AdminPage() {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [golfers, setGolfers] = useState<Golfer[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [tab, setTab] = useState<"setup" | "scores" | "payments" | "chat">("scores");
+  const [tab, setTab] = useState<"setup" | "scores" | "payments" | "picks" | "chat">("scores");
   const [yearData, setYearData] = useState<Year | null>(null);
   const [newYear, setNewYear] = useState(new Date().getFullYear());
   const [accessCode, setAccessCode] = useState("");
@@ -31,6 +31,21 @@ export default function AdminPage() {
     created_at: string;
   }
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  interface ParticipantPick {
+    id: string;
+    participant_id: string;
+    golfer_id: string;
+  }
+  interface ParticipantWithPicks {
+    id: string;
+    name: string;
+    tiebreaker_guess: number;
+    picks: ParticipantPick[];
+  }
+  const [picksData, setPicksData] = useState<ParticipantWithPicks[]>([]);
+  const [editingParticipant, setEditingParticipant] = useState<string | null>(null);
+  const [swapping, setSwapping] = useState<{ participantId: string; oldGolferId: string; tier: number } | null>(null);
 
   const headers = { "Content-Type": "application/json", Authorization: `Bearer ${password}` };
 
@@ -74,6 +89,10 @@ export default function AdminPage() {
     if (yd) {
       fetch(`/api/messages?year_id=${yd.id}`).then((r) => r.json()).then((data) => {
         if (Array.isArray(data)) setChatMessages(data);
+      });
+      // Load picks data for admin editing
+      fetch(`/api/admin/picks?year_id=${yd.id}`, { headers }).then((r) => r.json()).then((data) => {
+        if (Array.isArray(data)) setPicksData(data);
       });
     }
   }, [authed, selectedYear, years]);
@@ -185,6 +204,45 @@ export default function AdminPage() {
     }
   }
 
+  async function reloadPicksData() {
+    if (!yearData) return;
+    const res = await fetch(`/api/admin/picks?year_id=${yearData.id}`, { headers });
+    const data = await res.json();
+    if (Array.isArray(data)) setPicksData(data);
+  }
+
+  async function swapGolfer(participantId: string, oldGolferId: string, newGolferId: string) {
+    setMessage("");
+    const res = await fetch("/api/admin/picks", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ participant_id: participantId, old_golfer_id: oldGolferId, new_golfer_id: newGolferId }),
+    });
+    if (res.ok) {
+      setMessage("Pick updated successfully!");
+      setSwapping(null);
+      reloadPicksData();
+    } else {
+      const d = await res.json();
+      setMessage(`Error: ${d.error}`);
+    }
+  }
+
+  async function updateTiebreaker(participantId: string, value: string) {
+    const res = await fetch("/api/admin/picks", {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ participant_id: participantId, tiebreaker_guess: Number(value) }),
+    });
+    if (res.ok) {
+      setMessage("Tiebreaker updated!");
+      reloadPicksData();
+    } else {
+      const d = await res.json();
+      setMessage(`Error: ${d.error}`);
+    }
+  }
+
   async function reloadParticipants() {
     const res = await fetch(`/api/standings?year=${selectedYear}`);
     const data = await res.json();
@@ -237,7 +295,7 @@ export default function AdminPage() {
       </div>
 
       <div className="flex gap-1 mb-6 bg-[var(--bg-card)] rounded-xl p-1">
-        {(["setup", "scores", "payments", "chat"] as const).map((t) => (
+        {(["setup", "scores", "payments", "picks", "chat"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               tab === t ? "bg-[var(--em-green-dark)] text-white" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -400,6 +458,121 @@ export default function AdminPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === "picks" && (
+        <div className="space-y-4">
+          {picksData.length === 0 ? (
+            <p className="text-[var(--text-muted)] text-center py-8">No participants yet.</p>
+          ) : (
+            picksData.map((p) => {
+              const isExpanded = editingParticipant === p.id;
+              return (
+                <div key={p.id} className="card overflow-hidden">
+                  <button
+                    onClick={() => setEditingParticipant(isExpanded ? null : p.id)}
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-[var(--bg-card-hover)] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-[var(--text-primary)]">{p.name}</span>
+                      <span className="text-xs text-[var(--text-muted)]">TB: {p.tiebreaker_guess}</span>
+                    </div>
+                    <svg
+                      className={`w-5 h-5 text-[var(--text-muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-6 pb-5 border-t border-[var(--border-subtle)]">
+                      {/* Tiebreaker edit */}
+                      <div className="flex items-center gap-3 mt-4 mb-4">
+                        <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Tiebreaker:</label>
+                        <input
+                          type="number"
+                          defaultValue={p.tiebreaker_guess}
+                          onBlur={(e) => {
+                            if (Number(e.target.value) !== p.tiebreaker_guess) {
+                              updateTiebreaker(p.id, e.target.value);
+                            }
+                          }}
+                          className="w-24 bg-[var(--bg-secondary)] border border-[var(--border-medium)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--em-green-dark)]"
+                        />
+                      </div>
+
+                      {/* Picks by tier */}
+                      {[1, 2, 3, 4, 5, 6].map((tier) => {
+                        const tierPicks = p.picks.filter((pk) => {
+                          const g = golfers.find((gl) => gl.id === pk.golfer_id);
+                          return g && g.tier === tier;
+                        });
+                        if (tierPicks.length === 0) return null;
+
+                        const tierGolfers = golfers.filter((g) => g.tier === tier);
+
+                        return (
+                          <div key={tier} className="mb-3">
+                            <div className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1.5">
+                              Tier {tier}
+                            </div>
+                            <div className="space-y-1.5">
+                              {tierPicks.map((pk) => {
+                                const golfer = golfers.find((g) => g.id === pk.golfer_id);
+                                const isSwapping = swapping?.participantId === p.id && swapping?.oldGolferId === pk.golfer_id;
+
+                                return (
+                                  <div key={pk.id} className="flex items-center gap-2">
+                                    {isSwapping ? (
+                                      <div className="flex items-center gap-2 flex-1">
+                                        <select
+                                          autoFocus
+                                          defaultValue=""
+                                          onChange={(e) => {
+                                            if (e.target.value) swapGolfer(p.id, pk.golfer_id, e.target.value);
+                                          }}
+                                          className="flex-1 bg-[var(--bg-secondary)] border border-[var(--em-green-dark)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none"
+                                        >
+                                          <option value="">Select replacement...</option>
+                                          {tierGolfers
+                                            .filter((g) => !p.picks.some((existingPk) => existingPk.golfer_id === g.id))
+                                            .map((g) => (
+                                              <option key={g.id} value={g.id}>{g.name}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                          onClick={() => setSwapping(null)}
+                                          className="text-xs text-[var(--text-muted)] hover:text-red-400 px-2 py-1"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <span className="text-sm text-[var(--text-primary)] flex-1">{golfer?.name || "Unknown"}</span>
+                                        <button
+                                          onClick={() => setSwapping({ participantId: p.id, oldGolferId: pk.golfer_id, tier })}
+                                          className="text-xs font-medium px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--em-green)] border border-[var(--border-subtle)] hover:border-[var(--em-green-dark)] transition-colors"
+                                        >
+                                          Swap
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 

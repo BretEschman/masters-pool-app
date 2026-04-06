@@ -15,7 +15,7 @@ CREATE TABLE golfers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   year_id UUID NOT NULL REFERENCES years(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  tier INT NOT NULL CHECK (tier BETWEEN 1 AND 4),
+  tier INT NOT NULL CHECK (tier BETWEEN 1 AND 6),
   day1_score INT,
   day2_score INT,
   day3_score INT,

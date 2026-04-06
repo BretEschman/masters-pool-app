@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Must pick 2 from Tier 1, 2 from Tier 2, 1 from each of Tiers 3-6" }, { status: 400 });
   }
 
-  const { data: existing } = await supabase.from("participants").select("id").eq("year_id", year_id).eq("name", name).single();
+  const { data: existing } = await supabase.from("participants").select("id").eq("year_id", year_id).ilike("name", name.trim()).single();
   if (existing) return NextResponse.json({ error: "A participant with this name already exists" }, { status: 409 });
 
   const { data: participant, error: pError } = await supabase

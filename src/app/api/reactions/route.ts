@@ -97,6 +97,18 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServiceClient();
 
+  // Validate that the reactor is a real participant (prevents impersonation)
+  const { data: validReactor } = await supabase
+    .from("participants")
+    .select("id")
+    .ilike("name", reactor_name.trim())
+    .limit(1)
+    .single();
+
+  if (!validReactor) {
+    return NextResponse.json({ error: "Reactor must be a registered participant" }, { status: 403 });
+  }
+
   // Check if reaction already exists (toggle behavior)
   const { data: existing } = await supabase
     .from("reactions")

@@ -29,6 +29,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Message body must be 500 characters or less" }, { status: 400 });
 
   const supabase = createServiceClient();
+
+  // Validate that the author is a real participant (prevents impersonation)
+  const { data: participant } = await supabase
+    .from("participants")
+    .select("id")
+    .ilike("name", author.trim())
+    .limit(1)
+    .single();
+
+  if (!participant)
+    return NextResponse.json({ error: "Author must be a registered participant" }, { status: 403 });
+
   const { data, error } = await supabase
     .from("messages")
     .insert({ year_id, author: author.trim(), body: body.trim() })
