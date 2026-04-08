@@ -21,6 +21,7 @@ CREATE TABLE golfers (
   day3_score INT,
   day4_score INT,
   status golfer_status NOT NULL DEFAULT 'active',
+  position INT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
