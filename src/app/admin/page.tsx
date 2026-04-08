@@ -17,7 +17,6 @@ export default function AdminPage() {
   const [newYear, setNewYear] = useState(new Date().getFullYear());
   const [accessCode, setAccessCode] = useState("");
   const [golferText, setGolferText] = useState("");
-  const [reorderText, setReorderText] = useState("");
   const [message, setMessage] = useState("");
   const [refreshingScores, setRefreshingScores] = useState(false);
   const [loginFailed, setLoginFailed] = useState(false);
@@ -121,37 +120,6 @@ export default function AdminPage() {
     const res = await fetch("/api/admin/golfers", { method: "POST", headers, body: JSON.stringify({ year_id: yearRecord.id, golfers: parsed }) });
     if (res.ok) { setMessage(`${parsed.length} golfers uploaded!`); loadData(); }
     else { const d = await res.json(); setMessage(`Error: ${d.error}`); }
-  }
-
-  async function reorderGolfers() {
-    setMessage("");
-    const yearRecord = years.find((y) => y.year === selectedYear);
-    if (!yearRecord) { setMessage("Select a year first"); return; }
-    const lines = reorderText.split("\n").map((l) => l.trim()).filter(Boolean);
-    const ordered: { name: string; tier: number }[] = [];
-    let currentTier = 0;
-    for (const line of lines) {
-      const tierMatch = line.match(/^tier\s*(\d)/i);
-      if (tierMatch) { currentTier = Number(tierMatch[1]); }
-      else if (currentTier > 0) { ordered.push({ name: line, tier: currentTier }); }
-    }
-    if (ordered.length === 0) { setMessage("No golfers parsed. Use format: Tier 1\\nName\\n..."); return; }
-    const res = await fetch("/api/admin/golfers/reorder", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ year_id: yearRecord.id, ordered }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      let msg = `Reordered ${data.updated} golfers (picks preserved).`;
-      if (data.not_found?.length) msg += ` Not found: ${data.not_found.join(", ")}.`;
-      if (data.tier_mismatches?.length) msg += ` Tier mismatches: ${data.tier_mismatches.join(", ")}.`;
-      setMessage(msg);
-      // Reload golfers in admin view
-      fetch(`/api/golfers?year=${selectedYear}`).then((r) => r.json()).then((d) => setGolfers(d.golfers || []));
-    } else {
-      setMessage(`Error: ${data.error}`);
-    }
   }
 
   async function togglePicksOpen() {
@@ -355,22 +323,11 @@ export default function AdminPage() {
           </div>
           <div className="card p-6">
             <h3 className="font-bold text-[var(--text-primary)] mb-4">Upload Golfers for {selectedYear}</h3>
-            <p className="text-xs text-[var(--text-muted)] mb-3">⚠️ Replaces all golfers and DELETES existing picks. List in odds order — first = best odds.</p>
             <textarea value={golferText} onChange={(e) => setGolferText(e.target.value)}
               className={inputClass + " h-48 font-mono text-sm"}
               placeholder={"Tier 1\nScottie Scheffler\nRory McIlroy\n...\nTier 2\nWill Zalatoris\n..."} />
             <button onClick={uploadGolfers} className="bg-[var(--em-green-dark)] text-white px-6 py-2.5 rounded-xl font-medium mt-3 hover:bg-[var(--em-green)] transition-colors">
               Upload Golfers
-            </button>
-          </div>
-          <div className="card p-6">
-            <h3 className="font-bold text-[var(--text-primary)] mb-4">Reorder Golfers (by Odds)</h3>
-            <p className="text-xs text-[var(--text-muted)] mb-3">Updates display order without deleting picks. List in odds order — first = best odds. Names must match existing golfers.</p>
-            <textarea value={reorderText} onChange={(e) => setReorderText(e.target.value)}
-              className={inputClass + " h-48 font-mono text-sm"}
-              placeholder={"Tier 1\nScottie Scheffler\nRory McIlroy\n...\nTier 2\nCollin Morikawa\n..."} />
-            <button onClick={reorderGolfers} className="bg-[var(--em-green-dark)] text-white px-6 py-2.5 rounded-xl font-medium mt-3 hover:bg-[var(--em-green)] transition-colors">
-              Apply Order
             </button>
           </div>
           {yearData && (
