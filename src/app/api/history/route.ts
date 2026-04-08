@@ -48,10 +48,12 @@ function normalizeName(name: string): string {
 export async function GET() {
   const supabase = createServiceClient();
 
-  // Get all years
+  // Get all years EXCEPT the current year (in-progress tournament)
+  const currentYear = new Date().getFullYear();
   const { data: years } = await supabase
     .from("years")
     .select("*")
+    .neq("year", currentYear)
     .order("year", { ascending: true });
 
   if (!years || years.length === 0) {
