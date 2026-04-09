@@ -4,8 +4,6 @@ import { createServiceClient } from "@/lib/supabase";
 const ESPN_SCOREBOARD_URL =
   "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
 
-const PAR = 72;
-
 interface ESPNAthlete {
   displayName: string;
 }
@@ -205,25 +203,31 @@ export async function GET() {
       state = "not_started";
     } else {
       // Check if linescores exist for the current round
-      if (linescores[roundIndex]?.value > 0 && linescores[roundIndex]?.displayValue !== "-") {
+      if (linescores[roundIndex]?.displayValue && linescores[roundIndex]?.displayValue !== "-") {
         state = "finished";
       } else {
         state = "not_started";
       }
     }
 
-    // Calculate today's score (relative to par)
+    // Calculate today's score from displayValue (relative to par)
+    // "E" → 0, "+3" → 3, "-5" → -5, "-" → null
     let scoreToday: number | null = null;
     let scoreTodayDisplay = "-";
-    if (linescores[roundIndex]?.value > 0 && linescores[roundIndex]?.displayValue !== "-") {
-      scoreToday = linescores[roundIndex].value - PAR;
-      scoreTodayDisplay =
-        scoreToday === 0 ? "E" : scoreToday > 0 ? `+${scoreToday}` : `${scoreToday}`;
+    const roundDV = linescores[roundIndex]?.displayValue;
+    if (roundDV && roundDV !== "-") {
+      if (roundDV === "E") {
+        scoreToday = 0;
+      } else {
+        const parsed = parseInt(roundDV, 10);
+        if (!isNaN(parsed)) scoreToday = parsed;
+      }
+      scoreTodayDisplay = roundDV;
     }
 
     // Thru holes
     let thru = "-";
-    if (state === "finished" && linescores[roundIndex]?.value > 0) {
+    if (state === "finished" && linescores[roundIndex]?.displayValue && linescores[roundIndex]?.displayValue !== "-") {
       thru = "F";
     } else if (state === "on_course") {
       // ESPN status.displayValue often has the thru info like "Thru 12" or "F"
