@@ -41,7 +41,15 @@ export async function GET(req: NextRequest) {
   if (!dbGolfers) return NextResponse.json({ message: "No golfers in DB" });
 
   let updated = 0;
-  const par = 72;
+
+  // Parse ESPN displayValue (relative to par) into a number
+  // "E" → 0, "+3" → 3, "-5" → -5, "-" → null (not played)
+  function parseDisplayValue(dv: string | undefined): number | null {
+    if (!dv || dv === "-") return null;
+    if (dv === "E") return 0;
+    const num = parseInt(dv, 10);
+    return isNaN(num) ? null : num;
+  }
 
   for (const dbGolfer of dbGolfers) {
     const espnGolfer = competitors.find((c) => {
@@ -57,17 +65,9 @@ export async function GET(req: NextRequest) {
     for (let day = 0; day < 4; day++) {
       const round = linescores[day];
       const dayKey = `day${day + 1}_score`;
-      if (round?.value && round.value >= 60 && round.displayValue !== "-") {
-        // Completed round — store relative to par
-        updates[dayKey] = round.value - par;
-      } else if (dbGolfer[dayKey] !== null && dbGolfer[dayKey] !== undefined) {
-        // Round not complete but DB has a (possibly bad) value — clear it
-        // This handles the case where an in-progress score was incorrectly saved
-        const existingScore = dbGolfer[dayKey] as number;
-        if (existingScore < -20) {
-          // Clearly invalid (e.g. -68 from a partial round) — null it out
-          updates[dayKey] = null;
-        }
+      const score = parseDisplayValue(round?.displayValue);
+      if (score !== null) {
+        updates[dayKey] = score;
       }
     }
 
