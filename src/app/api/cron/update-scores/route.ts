@@ -56,8 +56,18 @@ export async function GET(req: NextRequest) {
 
     for (let day = 0; day < 4; day++) {
       const round = linescores[day];
-      if (round?.value && round.value > 0 && round.displayValue !== "-") {
-        updates[`day${day + 1}_score`] = round.value - par;
+      const dayKey = `day${day + 1}_score`;
+      if (round?.value && round.value >= 60 && round.displayValue !== "-") {
+        // Completed round — store relative to par
+        updates[dayKey] = round.value - par;
+      } else if (dbGolfer[dayKey] !== null && dbGolfer[dayKey] !== undefined) {
+        // Round not complete but DB has a (possibly bad) value — clear it
+        // This handles the case where an in-progress score was incorrectly saved
+        const existingScore = dbGolfer[dayKey] as number;
+        if (existingScore < -20) {
+          // Clearly invalid (e.g. -68 from a partial round) — null it out
+          updates[dayKey] = null;
+        }
       }
     }
 
