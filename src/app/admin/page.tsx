@@ -124,7 +124,13 @@ export default function AdminPage() {
 
   async function togglePicksOpen() {
     if (!yearData) return;
-    await fetch("/api/admin/year", { method: "POST", headers, body: JSON.stringify({ year: yearData.year, access_code: yearData.access_code, picks_open: !yearData.picks_open }) });
+    const res = await fetch("/api/admin/year", { method: "PATCH", headers, body: JSON.stringify({ year: yearData.year, picks_open: !yearData.picks_open }) });
+    if (res.ok) {
+      setMessage(yearData.picks_open ? "Picks closed!" : "Picks opened!");
+    } else {
+      const d = await res.json();
+      setMessage(`Error: ${d.error}`);
+    }
     loadData();
   }
 
