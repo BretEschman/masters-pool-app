@@ -12,7 +12,10 @@ interface ESPNCompetitor {
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+  const isAdmin = adminPassword && authHeader === `Bearer ${adminPassword}`;
+  if (!isCron && !isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
