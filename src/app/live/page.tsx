@@ -17,6 +17,7 @@ interface LiveData {
   active: boolean;
   round: number | null;
   golfers: LiveGolfer[];
+  projectedCut: number | null;
 }
 
 function ScoreBadge({ score, display }: { score: number | null; display: string }) {
@@ -189,9 +190,22 @@ export default function LivePage() {
         )}
       </div>
 
-      <p className="text-xs text-[var(--text-muted)] mb-6">
+      <p className="text-xs text-[var(--text-muted)] mb-4">
         Auto-refreshes every 30 seconds. Showing pool golfers only.
       </p>
+
+      {/* Projected Cut Line */}
+      {data.projectedCut !== null && (
+        <div className="card mb-6 px-4 py-3 flex items-center justify-between border border-[var(--masters-yellow)]/30 bg-[var(--masters-yellow)]/5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[var(--masters-yellow)] uppercase tracking-wider">Projected Cut</span>
+            <span className="text-xs text-[var(--text-muted)]">Top 50 + Ties</span>
+          </div>
+          <span className="text-lg font-bold text-[var(--masters-yellow)]" style={{ fontFamily: "Oswald, sans-serif" }}>
+            {data.projectedCut === 0 ? "E" : data.projectedCut > 0 ? `+${data.projectedCut}` : data.projectedCut}
+          </span>
+        </div>
+      )}
 
       {/* On Course Section */}
       {onCourse.length > 0 && (

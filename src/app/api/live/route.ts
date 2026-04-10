@@ -269,9 +269,37 @@ export async function GET() {
     return (a.scoreToday ?? 99) - (b.scoreToday ?? 99);
   });
 
+  // Calculate projected cut line (top 50 + ties after R2)
+  // Use all competitors, not just pool golfers
+  let projectedCut: number | null = null;
+  if (currentRound <= 2) {
+    const allTotals: number[] = [];
+    for (const comp of competitors) {
+      const ls = comp.linescores || [];
+      let total = 0;
+      let hasScore = false;
+      for (let d = 0; d < 2; d++) {
+        const dv = ls[d]?.displayValue;
+        if (dv && dv !== "-") {
+          if (dv === "E") { hasScore = true; }
+          else {
+            const parsed = parseInt(dv, 10);
+            if (!isNaN(parsed)) { total += parsed; hasScore = true; }
+          }
+        }
+      }
+      if (hasScore) allTotals.push(total);
+    }
+    allTotals.sort((a, b) => a - b);
+    if (allTotals.length >= 50) {
+      projectedCut = allTotals[49]; // 50th position (0-indexed)
+    }
+  }
+
   return NextResponse.json({
     active: true,
     round: currentRound,
     golfers: liveGolfers,
+    projectedCut,
   });
 }
