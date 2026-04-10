@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
+import { namesMatch } from "@/lib/name-match";
 
 const ESPN_LEADERBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
 
@@ -55,11 +56,9 @@ export async function GET(req: NextRequest) {
   }
 
   for (const dbGolfer of dbGolfers) {
-    const espnGolfer = competitors.find((c) => {
-      const espnName = c.athlete?.displayName?.toLowerCase();
-      const dbName = dbGolfer.name.toLowerCase();
-      return espnName === dbName || espnName?.includes(dbName) || dbName.includes(espnName || "");
-    });
+    const espnGolfer = competitors.find((c) =>
+      c.athlete?.displayName && namesMatch(c.athlete.displayName, dbGolfer.name)
+    );
     if (!espnGolfer) continue;
 
     const linescores = espnGolfer.linescores || [];

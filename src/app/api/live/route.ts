@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
+import { normalizeName } from "@/lib/name-match";
 
 const ESPN_SCOREBOARD_URL =
   "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
@@ -132,10 +133,10 @@ export async function GET() {
           golferIdCounts[pick.golfer_id] =
             (golferIdCounts[pick.golfer_id] || 0) + 1;
         }
-        // Map golfer names to pick counts
+        // Map golfer names to pick counts (normalized for accent matching)
         for (const g of golfers) {
           if (golferIdCounts[g.id]) {
-            pickCountMap[g.name.toLowerCase()] = golferIdCounts[g.id];
+            pickCountMap[normalizeName(g.name)] = golferIdCounts[g.id];
           }
         }
       }
@@ -153,7 +154,7 @@ export async function GET() {
       .eq("year_id", yearData.id);
     if (allGolfers) {
       for (const g of allGolfers) {
-        poolGolferNames.add(g.name.toLowerCase());
+        poolGolferNames.add(normalizeName(g.name));
       }
     }
   }
@@ -165,13 +166,13 @@ export async function GET() {
     const name = comp.athlete?.displayName;
     if (!name) continue;
 
-    // Check if this golfer is in our pool
-    const nameLower = name.toLowerCase();
+    // Check if this golfer is in our pool (accent-normalized)
+    const nameNorm = normalizeName(name);
     const inPool = [...poolGolferNames].some(
       (pn) =>
-        pn === nameLower ||
-        nameLower.includes(pn) ||
-        pn.includes(nameLower)
+        pn === nameNorm ||
+        nameNorm.includes(pn) ||
+        pn.includes(nameNorm)
     );
     if (!inPool) continue;
 
@@ -242,9 +243,9 @@ export async function GET() {
 
     // Pick count
     const pickCount =
-      pickCountMap[nameLower] ||
+      pickCountMap[nameNorm] ||
       [...Object.entries(pickCountMap)].find(
-        ([pn]) => nameLower.includes(pn) || pn.includes(nameLower)
+        ([pn]) => nameNorm.includes(pn) || pn.includes(nameNorm)
       )?.[1] ||
       0;
 
