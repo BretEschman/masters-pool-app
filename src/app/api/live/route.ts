@@ -238,8 +238,9 @@ export async function GET() {
       }
     }
 
-    // Total tournament score (use ESPN display value)
-    const totalScore = comp.score?.displayValue || "-";
+    // Total tournament score — ESPN sometimes returns score as a string, sometimes as an object
+    const rawScore = comp.score;
+    const totalScore = typeof rawScore === "string" ? rawScore : rawScore?.displayValue || "-";
 
     // Pick count
     const pickCount =
