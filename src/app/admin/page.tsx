@@ -411,12 +411,12 @@ export default function AdminPage() {
                     <td className="px-2 py-2 text-center text-[var(--text-secondary)]">{g.tier}</td>
                     {(["day1_score", "day2_score", "day3_score", "day4_score"] as const).map((field) => (
                       <td key={field} className="px-1 py-1">
-                        <input type="number" defaultValue={g[field] ?? ""} onBlur={(e) => updateScore(g.id, field, e.target.value)}
+                        <input type="number" key={`${g.id}-${field}-${g[field]}`} defaultValue={g[field] ?? ""} onBlur={(e) => updateScore(g.id, field, e.target.value)}
                           className="w-16 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-center text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--em-green-dark)]" />
                       </td>
                     ))}
                     <td className="px-1 py-1">
-                      <select defaultValue={g.status} onChange={(e) => updateStatus(g.id, e.target.value)}
+                      <select key={`${g.id}-status-${g.status}`} defaultValue={g.status} onChange={(e) => updateStatus(g.id, e.target.value)}
                         className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none">
                         <option value="active">Active</option>
                         <option value="cut">Cut</option>
