@@ -117,7 +117,12 @@ export default function Leaderboard({ standings, reactions, onToggleReaction }: 
               <span className="font-medium text-sm text-[var(--text-primary)] truncate">
                 {s.participant.name}
               </span>
-              {s.participant.paid && (
+              {s.participant.premium && (
+                <span className="text-[10px] bg-[var(--masters-yellow)]/20 text-[var(--masters-yellow)] px-1.5 py-0.5 rounded-full font-semibold shrink-0 border border-[var(--masters-yellow)]/30">
+                  VIP
+                </span>
+              )}
+              {s.participant.paid && !s.participant.premium && (
                 <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-semibold shrink-0">
                   PAID
                 </span>
@@ -163,7 +168,12 @@ export default function Leaderboard({ standings, reactions, onToggleReaction }: 
                   <span className="font-medium text-sm text-[var(--text-primary)] truncate">
                     {s.participant.name}
                   </span>
-                  {s.participant.paid && (
+                  {s.participant.premium && (
+                    <span className="text-[10px] bg-[var(--masters-yellow)]/20 text-[var(--masters-yellow)] px-1.5 py-0.5 rounded-full font-semibold shrink-0 border border-[var(--masters-yellow)]/30">
+                      VIP
+                    </span>
+                  )}
+                  {s.participant.paid && !s.participant.premium && (
                     <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-semibold shrink-0">
                       PAID
                     </span>

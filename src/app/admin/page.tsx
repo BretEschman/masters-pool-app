@@ -148,6 +148,11 @@ export default function AdminPage() {
     reloadParticipants();
   }
 
+  async function togglePremium(participantId: string, currentPremium: boolean) {
+    await fetch("/api/admin/payments", { method: "POST", headers, body: JSON.stringify({ participant_id: participantId, premium: !currentPremium }) });
+    reloadParticipants();
+  }
+
   async function deleteParticipant(participantId: string, name: string) {
     if (!confirm(`Delete ${name} and all their picks? This cannot be undone.`)) return;
     await fetch("/api/admin/payments", { method: "DELETE", headers, body: JSON.stringify({ participant_id: participantId }) });
@@ -439,6 +444,7 @@ export default function AdminPage() {
               <tr className="border-b border-[var(--border-subtle)]">
                 <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Name</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">VIP</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider"></th>
               </tr>
             </thead>
@@ -452,6 +458,14 @@ export default function AdminPage() {
                         p.paid ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
                       }`}>
                       {p.paid ? "Paid $25" : "Not Paid"}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <button onClick={() => togglePremium(p.id, p.premium)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                        p.premium ? "bg-[var(--masters-yellow)]/20 text-[var(--masters-yellow)]" : "bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--masters-yellow)]"
+                      }`}>
+                      {p.premium ? "VIP" : "Standard"}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-center">

@@ -26,6 +26,7 @@ export interface Participant {
   year_id: string;
   name: string;
   paid: boolean;
+  premium: boolean;
   tiebreaker_guess: number;
 }
 

@@ -31,6 +31,7 @@ CREATE TABLE participants (
   year_id UUID NOT NULL REFERENCES years(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   paid BOOLEAN NOT NULL DEFAULT false,
+  premium BOOLEAN NOT NULL DEFAULT false,
   tiebreaker_guess INT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(year_id, name)
