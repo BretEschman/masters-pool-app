@@ -77,6 +77,21 @@ export async function GET(req: NextRequest) {
     if (statusName.includes("cut")) updates.status = "cut";
     else if (statusName.includes("wd") || statusName.includes("withdraw")) updates.status = "wd";
 
+    // Detect cut golfers when ESPN doesn't set status:
+    // If we're in round 3+ and golfer has R1+R2 scores but no R3 data, they were cut
+    const currentRound = competition.status?.period || 1;
+    if (currentRound >= 3 && dbGolfer.status === "active") {
+      const hasR1R2 = updates.day1_score !== undefined || dbGolfer.day1_score !== null;
+      const r3Score = parseDisplayValue(linescores[2]?.displayValue);
+      const r3Val = linescores[2]?.value || 0;
+      const hasR3 = r3Score !== null || r3Val > 0;
+      if (hasR1R2 && !hasR3) {
+        updates.status = "cut";
+        updates.day3_score = 10;
+        updates.day4_score = 10;
+      }
+    }
+
     if (Object.keys(updates).length > 0) {
       await supabase.from("golfers").update(updates).eq("id", dbGolfer.id);
       updated++;
