@@ -42,6 +42,7 @@ const NAME_MAP: Record<string, string> = {
   "Alex K": "Alex Keel",
   "Shooter": "Paul Buxton",
   "Greg": "Papa Esch",
+  "Lou": "Lou Strecker",
 };
 
 function normalizeName(name: string): string {
